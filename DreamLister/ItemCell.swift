@@ -21,5 +21,12 @@ class ItemCell: UITableViewCell {
         
         
     }
+    
+    func configureCell(item: Item) {
+        
+        titleLabel.text = item.title
+        priceLabel.text = "$\(item.price)"
+        detailsLabel.text = item.details
+    }
 
 }

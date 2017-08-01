@@ -9,7 +9,7 @@
 import UIKit
 import CoreData
 
-class MainVC: UIViewController, UITableViewDataSource, NSFetchedResultsControllerDelegate {
+class MainVC: UIViewController, UITableViewDelegate, UITableViewDataSource, NSFetchedResultsControllerDelegate {
     
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var segment: UISegmentedControl!
@@ -19,7 +19,11 @@ class MainVC: UIViewController, UITableViewDataSource, NSFetchedResultsControlle
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        tableView.delegate = self
         tableView.dataSource = self
+        
+//        self.generateTestData()
+        self.attemptFetch()
     }
     
     func attemptFetch() {
@@ -29,6 +33,7 @@ class MainVC: UIViewController, UITableViewDataSource, NSFetchedResultsControlle
         fetchRequest.sortDescriptors = [dateSort]
         
         let controller = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
+        self.controller = controller
         
         do {
             
@@ -41,20 +46,70 @@ class MainVC: UIViewController, UITableViewDataSource, NSFetchedResultsControlle
         }
     }
     
+    func configureCell(cell: ItemCell, indexPath: NSIndexPath) {
+        
+        let item = self.controller.object(at: indexPath as IndexPath)
+        cell.configureCell(item: item)
+    }
+    
+    func generateTestData() {
+        
+        let item1 = Item(context: context)
+        item1.title = "New MacBook Pro"
+        item1.price = 2300
+        item1.details = "Can't wait to get my hands on the new MacBook Pro!"
+        
+        let item2 = Item(context: context)
+        item2.title = "Wireless Keyboard"
+        item2.price = 100
+        item2.details = "Need one for my desktop"
+        
+        let item3 = Item(context: context)
+        item3.title = "Chevy Camaro SS"
+        item3.price = 95000
+        item3.details = "Always wanted a bumblebee for myself"
+        
+        appDelegate.saveContext()
+    }
     
     
+    /**
+    * DELEGATES
+    */
     
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+        
+        if let sections = self.controller.sections {
+            
+            return sections.count
+        }
+        return 0
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
+        
+        if let sections = self.controller.sections {
+            
+            let sectionInfo = sections[section]
+            return sectionInfo.numberOfObjects
+        }
+        
+        return 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
+        if let cell = tableView.dequeueReusableCell(withIdentifier: "ItemCell", for: indexPath) as? ItemCell {
+            
+            self.configureCell(cell: cell, indexPath: indexPath as NSIndexPath)
+            return cell
+        }
         return UITableViewCell()
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 150
     }
     
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
@@ -81,7 +136,7 @@ class MainVC: UIViewController, UITableViewDataSource, NSFetchedResultsControlle
         case .update:
             if let indexPath = indexPath {
                 let cell = tableView.cellForRow(at: indexPath) as! ItemCell
-                // update cell data
+                self.configureCell(cell: cell, indexPath: indexPath as NSIndexPath)
             }
             break
         case .move:
