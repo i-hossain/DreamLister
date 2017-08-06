@@ -65,6 +65,37 @@ class ItemDetailsVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSou
         }
     }
     
+    
+    @IBAction func saveItemPressed(_ sender: UIButton) {
+        
+        let item = Item(context: context)
+        
+        if let title = titleField.text {
+            
+            item.title = title
+        }
+        
+        if let price = priceField.text {
+            
+            item.price = (price as NSString).doubleValue
+        }
+        
+        if let details = detailsField.text {
+            
+            item.details = details
+        }
+        
+        item.toStore = stores[storePicker.selectedRow(inComponent: 0)]
+        
+        appDelegate.saveContext()
+        
+        self.navigationController?.popViewController(animated: true)
+    }
+    
+    /**
+    * Delegate methods
+    */
+    
     func numberOfComponents(in pickerView: UIPickerView) -> Int {
         return 1
     }
