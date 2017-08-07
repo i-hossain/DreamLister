@@ -109,6 +109,15 @@ class MainVC: UIViewController, UITableViewDelegate, UITableViewDataSource, NSFe
         return UITableViewCell()
     }
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+        if let objects = self.controller.fetchedObjects, objects.count > 0 {
+            
+            let item = objects[indexPath.row]
+            performSegue(withIdentifier: "goToItemDetailsVC", sender: item)
+        }
+    }
+    
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 150
     }
@@ -149,6 +158,20 @@ class MainVC: UIViewController, UITableViewDelegate, UITableViewDataSource, NSFe
                 tableView.insertRows(at: [indexPath], with: .fade)
             }
             break
+        }
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
+        if segue.identifier == "goToItemDetailsVC" {
+            
+            if let destination = segue.destination as? ItemDetailsVC {
+                
+                if let item = sender as? Item {
+                    
+                    destination.itemToEdit = item
+                }
+            }
         }
     }
 

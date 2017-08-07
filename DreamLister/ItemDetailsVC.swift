@@ -17,6 +17,7 @@ class ItemDetailsVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSou
     @IBOutlet weak var detailsField: CustomTextField!
     
     var stores = [Store]()
+    var itemToEdit: Item?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -46,6 +47,10 @@ class ItemDetailsVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSou
         
         self.getStores()
         
+        if itemToEdit != nil {
+            
+            self.loadItemData()
+        }
     }
     
     func getStores() {
@@ -65,32 +70,79 @@ class ItemDetailsVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSou
         }
     }
     
+    func loadItemData() {
+        
+        if let item = itemToEdit {
+            
+            self.titleField.text = item.title
+            self.priceField.text = "\(item.price)"
+            self.detailsField.text = item.details
+            
+            if let store = item.toStore {
+                
+                var index = 0
+                repeat {
+                    
+                    let s = stores[index]
+                    if s.name == store.name {
+                        
+                        self.storePicker.selectRow(index, inComponent: 0, animated: false)
+                        break
+                    }
+                    index += 1
+                    
+                } while (index < stores.count)
+            }
+        }
+    }
+    
     
     @IBAction func saveItemPressed(_ sender: UIButton) {
         
-        let item = Item(context: context)
+        var item: Item!
         
-        if let title = titleField.text {
+        if itemToEdit == nil {
+            
+            item = Item(context: context)
+        }
+        else {
+            
+            item = itemToEdit
+        }
+        
+        if let title = self.titleField.text {
             
             item.title = title
         }
         
-        if let price = priceField.text {
+        if let price = self.priceField.text {
             
             item.price = (price as NSString).doubleValue
         }
         
-        if let details = detailsField.text {
+        if let details = self.detailsField.text {
             
             item.details = details
         }
         
-        item.toStore = stores[storePicker.selectedRow(inComponent: 0)]
+        item.toStore = stores[self.storePicker.selectedRow(inComponent: 0)]
         
         appDelegate.saveContext()
         
         self.navigationController?.popViewController(animated: true)
     }
+    
+    @IBAction func deletePressed(_ sender: UIBarButtonItem) {
+        
+        if itemToEdit != nil {
+            
+            context.delete(itemToEdit!)
+            appDelegate.saveContext()
+        }
+        
+        self.navigationController?.popViewController(animated: true)
+    }
+    
     
     /**
     * Delegate methods
