@@ -9,15 +9,17 @@
 import UIKit
 import CoreData
 
-class ItemDetailsVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource {
+class ItemDetailsVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
     @IBOutlet weak var storePicker: UIPickerView!
     @IBOutlet weak var titleField: CustomTextField!
     @IBOutlet weak var priceField: CustomTextField!
     @IBOutlet weak var detailsField: CustomTextField!
+    @IBOutlet weak var imageThumbnail: UIImageView!
     
     var stores = [Store]()
     var itemToEdit: Item?
+    var imagePicker: UIImagePickerController!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,8 +28,11 @@ class ItemDetailsVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSou
             topItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         }
         
+        imagePicker = UIImagePickerController()
+        
         storePicker.delegate = self
         storePicker.dataSource = self
+        imagePicker.delegate = self
         
 //        // Test Data
 //        let store1 = Store(context: context)
@@ -77,6 +82,7 @@ class ItemDetailsVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSou
             self.titleField.text = item.title
             self.priceField.text = "\(item.price)"
             self.detailsField.text = item.details
+            self.imageThumbnail.image = item.toImage?.image as? UIImage
             
             if let store = item.toStore {
                 
@@ -101,6 +107,9 @@ class ItemDetailsVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSou
         
         var item: Item!
         
+        let picture = Image(context: context)
+        picture.image = imageThumbnail.image
+        
         if itemToEdit == nil {
             
             item = Item(context: context)
@@ -109,6 +118,8 @@ class ItemDetailsVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSou
             
             item = itemToEdit
         }
+        
+        item.toImage = picture
         
         if let title = self.titleField.text {
             
@@ -144,6 +155,12 @@ class ItemDetailsVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSou
     }
     
     
+    @IBAction func addImage(_ sender: UIButton) {
+        
+        present(self.imagePicker, animated: true, completion: nil)
+    }
+    
+    
     /**
     * Delegate methods
     */
@@ -162,6 +179,16 @@ class ItemDetailsVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSou
     
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         // Update when selected
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        
+        if let img = info[UIImagePickerControllerOriginalImage] as? UIImage {
+            
+            self.imageThumbnail.image = img
+        }
+        
+        self.imagePicker.dismiss(animated: true, completion: nil)
     }
 
 }
